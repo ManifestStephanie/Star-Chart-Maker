@@ -207,12 +207,12 @@ with _lock:
             'saturn barycenter': 'yellow',
             'uranus barycenter': 'teal',
             'neptune barycenter': 'blue'} 
-    offset = 0.008
+    offset = 0.016
 
     for obj in eph_obj:
         if altaz_dist[obj][0].degrees > 0:
             # Make planet marker size relative to the log of the apparent diam
-            size = math.log(apparent_diam_arcsec[obj])*20
+            size = math.log(apparent_diam_arcsec[obj])*25
             ax.scatter(x[obj], y[obj], s=size, marker='o', c=color[obj], edgecolors='black', zorder=3)
             #time = t.astimezone(zone).strftime('%m-%d')
             name = re.split("\s", obj)[0].capitalize()
@@ -247,6 +247,5 @@ with _lock:
 
 
 # TODO: Plot ecliptic
-# Turn into Streamlit app
 # Minimize stars and contellations below horizon, or add an overlay shade
-
+# Add Moon phase
