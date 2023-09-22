@@ -23,12 +23,21 @@ from skyfield.projections import build_stereographic_projection
 from datetime import datetime
 from pytz import timezone
 import re
-
+from geopy.geocoders import Nominatim
+from timezonefinder import TimezoneFinder
 
 # In[3]:
+loc_text = st.text_input('Address', value="", placeholder="345 Blueberry Ln Lexington KY")
+#seattle = wgs84.latlon(47.61352679507131, -122.30535433025425, elevation_m=100)
+geolocator = Nominatim(user_agent="Star_Chart_Generator")
+nom_location = geolocator.geocode(loc_text)
+long = nom_location.longitude
+lat = nom_location.latitude
+location = wgs84.latlon(lat, long)
 
-
-zone = timezone('US/Pacific')
+obj = TimezoneFinder()
+zone_name = obj.timezone_at(lat=lat, lng=long)
+zone = timezone(zone_name)
 ts = load.timescale()
 #year = int(st.text_input('Year', value="2023"))
 #month = int(st.text_input('Month', value="1"))
@@ -43,8 +52,8 @@ day = int(date_split[2])
 hour = int(time_split[0])
 minute = int(time_split[1])
 t = ts.from_datetime(zone.localize(datetime(year, month, day, hour, minute, 0)))
-seattle = wgs84.latlon(47.61352679507131, -122.30535433025425, elevation_m=100)
-location = seattle
+
+
 #t = ts.from_datetime(zone.localize(datetime(2023,11,2,1,0,0)))
 #t_jupiter = ts.utc(2023, 9, range(15, 75))
 # 180 = South, 0 = North
