@@ -61,7 +61,7 @@ t = ts.from_datetime(zone.localize(datetime(year, month, day, hour, minute, 0)))
 # 180 = South, 0 = North
 degrees = 0.0
 # Set zenith
-position = location.at(t).from_altaz(alt_degrees=90, az_degrees=degrees) 
+zenith = location.at(t).from_altaz(alt_degrees=90, az_degrees=degrees) 
 
 
 # In[81]:
@@ -103,7 +103,7 @@ edges_star2 = [star2 for star1, star2 in edges]
 
 
 # Center the chart on the zenith
-projection = build_stereographic_projection(position)
+projection = build_stereographic_projection(zenith)
 field_of_view_degrees = 180.0
 
 # Allow user to select limiting magnitude
@@ -191,7 +191,7 @@ with _lock:
         h0 = h1
 
     ax.add_collection(LineCollection(horizon, colors='#00f2', linewidths=1, linestyle='dashed',
-                                     zorder=-1, alpha=0.5))
+                                     zorder=0, alpha=0.5))
 
     # Draw the constellation lines
 
@@ -200,7 +200,7 @@ with _lock:
     # Draw the stars
 
     ax.scatter(stars['x'][bright_stars], stars['y'][bright_stars],
-               s=marker_size, color='k', zorder=-1)
+               s=marker_size, color='k', zorder=0)
 
     # Draw the jupiter positions
 
@@ -234,6 +234,12 @@ with _lock:
 
     angle = np.pi - field_of_view_degrees / 360.0 * np.pi
     limit = np.sin(angle / (1.0 - np.cos(angle)))
+    
+    # Horizon circle
+    horiz_circle = plt.Circle((0, 0), limit, color='white', zorder=-1)
+    ax.add_patch(horiz_circle)
+    ax.set_facecolor("linen")
+    
 
     ax.set_xlim(-limit, limit)
     ax.set_ylim(-limit, limit)
@@ -252,7 +258,8 @@ with _lock:
 
 
 # TODO: Plot ecliptic
-# Minimize stars and contellations below horizon, or add an overlay shade
 # Add Moon phase
 # Add major star names
 # Display Lat and Long
+# Add the sun
+# Add cardinal directions
