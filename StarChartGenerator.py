@@ -27,7 +27,8 @@ from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
 
 # In[3]:
-loc_text = st.text_input('Address', value="", placeholder="345 Blueberry Ln Lexington KY")
+# Enter location
+loc_text = st.text_input('Address', value="345 Blueberry Ln Lexington", placeholder="345 Blueberry Ln Lexington KY")
 #seattle = wgs84.latlon(47.61352679507131, -122.30535433025425, elevation_m=100)
 geolocator = Nominatim(user_agent="Star_Chart_Generator")
 nom_location = geolocator.geocode(loc_text)
@@ -35,15 +36,18 @@ long = nom_location.longitude
 lat = nom_location.latitude
 location = wgs84.latlon(lat, long)
 
+# Calculate the correct time zone
 obj = TimezoneFinder()
 zone_name = obj.timezone_at(lat=lat, lng=long)
 zone = timezone(zone_name)
+
+# Load timescale
 ts = load.timescale()
-#year = int(st.text_input('Year', value="2023"))
-#month = int(st.text_input('Month', value="1"))
-date_text = st.text_input('Date', value="", placeholder="YYYY/MM/DD")
+
+# Enter date and time
+date_text = st.text_input('Date', value="2020/02/20", placeholder="YYYY/MM/DD")
 date_split = re.split('/', date_text)
-time_text = st.text_input('Local Time (24-hr)', value="", placeholder="HH:MM")
+time_text = st.text_input('Local Time (24-hr)', value="21:00", placeholder="HH:MM")
 time_split = re.split(':', time_text)
 #st.write(date_split)
 year = int(date_split[0])
@@ -54,8 +58,6 @@ minute = int(time_split[1])
 t = ts.from_datetime(zone.localize(datetime(year, month, day, hour, minute, 0)))
 
 
-#t = ts.from_datetime(zone.localize(datetime(2023,11,2,1,0,0)))
-#t_jupiter = ts.utc(2023, 9, range(15, 75))
 # 180 = South, 0 = North
 degrees = 0.0
 # Set zenith
@@ -103,7 +105,10 @@ edges_star2 = [star2 for star1, star2 in edges]
 # Center the chart on the zenith
 projection = build_stereographic_projection(position)
 field_of_view_degrees = 180.0
-limiting_magnitude = 6.0
+
+# Allow user to select limiting magnitude
+limiting_magnitude = st.slider(label="Limiting Magnitude of Stars", min_value=1.0, max_value=7.0, value=5.5, step=0.5)
+#limiting_magnitude = 6.0
 
 
 # In[86]:
@@ -249,3 +254,5 @@ with _lock:
 # TODO: Plot ecliptic
 # Minimize stars and contellations below horizon, or add an overlay shade
 # Add Moon phase
+# Add major star names
+# Display Lat and Long
