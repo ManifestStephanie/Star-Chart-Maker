@@ -51,7 +51,7 @@ date = st.date_input('Date')
 time = st.time_input('Time (UTC)')
 date_time = datetime.combine(date, time)
 date_time.replace(tzinfo=tzone.utc)
-time_local = zone.localize(date_time)
+time_local = date_time.astimezone(zone)
 st.write(f"Local time: {time_local.strftime('%H:%M')}")
 t = ts.from_datetime(time_local)
 
