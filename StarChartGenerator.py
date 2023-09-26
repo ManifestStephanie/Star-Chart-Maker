@@ -49,7 +49,6 @@ ts = load.timescale()
 date = st.date_input('Date')
 time = st.time_input('Time')
 date_time = datetime.combine(date, time)
-st.write(date_time)
 t = ts.from_datetime(zone.localize(date_time))
 
 
