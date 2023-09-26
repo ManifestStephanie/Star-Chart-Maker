@@ -30,7 +30,7 @@ from timezonefinder import TimezoneFinder
 # In[3]:
 # Enter location
 loc_text = st.text_input('Address', value="345 Blueberry Ln Lexington", placeholder="345 Blueberry Ln Lexington KY")
-st.write("Powered by [OpenStreetMap](openstreetmap.org/copyright)")
+st.write("Powered by [OpenStreetMap](http://www.openstreetmap.org/copyright)")
 #seattle = wgs84.latlon(47.61352679507131, -122.30535433025425, elevation_m=100)
 geolocator = Nominatim(user_agent="Star_Chart_Generator")
 nom_location = geolocator.geocode(loc_text)
