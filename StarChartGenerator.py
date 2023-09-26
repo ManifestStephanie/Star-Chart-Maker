@@ -29,6 +29,7 @@ from timezonefinder import TimezoneFinder
 # In[3]:
 # Enter location
 loc_text = st.text_input('Address', value="345 Blueberry Ln Lexington", placeholder="345 Blueberry Ln Lexington KY")
+st.write("Powered by [OpenStreetMap](openstreetmap.org/copyright)")
 #seattle = wgs84.latlon(47.61352679507131, -122.30535433025425, elevation_m=100)
 geolocator = Nominatim(user_agent="Star_Chart_Generator")
 nom_location = geolocator.geocode(loc_text)
@@ -45,17 +46,11 @@ zone = timezone(zone_name)
 ts = load.timescale()
 
 # Enter date and time
-date_text = st.text_input('Date', value="2020/02/20", placeholder="YYYY/MM/DD")
-date_split = re.split('/', date_text)
-time_text = st.text_input('Local Time (24-hr)', value="21:00", placeholder="HH:MM")
-time_split = re.split(':', time_text)
-#st.write(date_split)
-year = int(date_split[0])
-month = int(date_split[1])
-day = int(date_split[2])
-hour = int(time_split[0])
-minute = int(time_split[1])
-t = ts.from_datetime(zone.localize(datetime(year, month, day, hour, minute, 0)))
+date = st.date_input('Date')
+time = st.time_input('Time')
+date_time = datetime.combine(date, time)
+st.write(date_time)
+t = ts.from_datetime(zone.localize(date_time))
 
 
 # 180 = South, 0 = North
