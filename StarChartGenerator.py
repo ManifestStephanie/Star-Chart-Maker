@@ -36,6 +36,7 @@ geolocator = Nominatim(user_agent="Star_Chart_Generator")
 nom_location = geolocator.geocode(loc_text)
 long = nom_location.longitude
 lat = nom_location.latitude
+st.write(f"Chart Long, Lat: {long}, {lat}")
 location = wgs84.latlon(lat, long)
 
 # Calculate the correct time zone
@@ -68,9 +69,9 @@ zenith = location.at(t).from_altaz(alt_degrees=90, az_degrees=degrees)
 eph = load('de421.bsp')
 earth = eph['earth']
 
-eph_obj = ('moon', 'mercury', 'venus', 'mars', 'jupiter barycenter', 'saturn barycenter',
+eph_obj = ('sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter barycenter', 'saturn barycenter',
            'uranus barycenter', 'neptune barycenter')
-radius_km = (1737.4, 2437.7, 6051.8, 3389.5, 69911, 58232, 25362, 24622)
+radius_km = (695700, 1737.4, 2437.7, 6051.8, 3389.5, 69911, 58232, 25362, 24622)
 radius_km_dict = dict(zip(eph_obj, radius_km))
 
 
@@ -202,12 +203,13 @@ with _lock:
 
     # Draw the jupiter positions
 
-    color = {'moon': 'gray',
+    color = {'sun': 'yellow',
+             'moon': 'gray',
              'mercury': 'brown',
              'venus': 'blue',
              'mars': 'red',
              'jupiter barycenter': 'darkorange',
-            'saturn barycenter': 'yellow',
+            'saturn barycenter': 'gold',
             'uranus barycenter': 'teal',
             'neptune barycenter': 'blue'} 
     offset = 0.016
@@ -259,5 +261,4 @@ with _lock:
 # Add Moon phase
 # Add major star names
 # Display Lat and Long
-# Add the sun
 # Add cardinal directions
