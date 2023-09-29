@@ -20,7 +20,7 @@ from skyfield.api import Star, load, wgs84, N, S, W, E, Angle
 from skyfield.constants import GM_SUN_Pitjeva_2005_km3_s2 as GM_SUN
 from skyfield.data import hipparcos, mpc, stellarium
 from skyfield.projections import build_stereographic_projection
-from datetime import datetime
+from datetime import datetime, time
 from datetime import timezone as tzone
 from pytz import timezone
 import re
@@ -49,11 +49,11 @@ ts = load.timescale()
 
 # Enter date and time
 date = st.date_input('Date')
-time = st.time_input('Time (UTC)')
-date_time = datetime.combine(date, time)
-date_time.replace(tzinfo=tzone.utc)
+user_time = st.time_input('Time (Local)', value=time(hour=22))
+date_time = datetime.combine(date, user_time)
+date_time.replace(tzinfo=zone)
 time_local = date_time.astimezone(zone)
-st.write(f"Local time: {time_local.strftime('%H:%M')}")
+#st.write(f"Local time: {time_local.strftime('%H:%M')}")
 t = ts.from_datetime(time_local)
 
 
