@@ -43,18 +43,21 @@ location = wgs84.latlon(lat, long)
 obj = TimezoneFinder()
 zone_name = obj.timezone_at(lat=lat, lng=long)
 zone = timezone(zone_name)
+#st.write(f"zone: {zone}")
 
 # Load timescale
 ts = load.timescale()
 
 # Enter date and time
 date = st.date_input('Date')
-user_time = st.time_input('Time (Local)', value=time(hour=22))
+#st.write(f"Date: {date}")
+user_time = st.time_input('Time (Local)', value=datetime.combine(date, time(hour=22, minute=0)), step=3600)
 date_time = datetime.combine(date, user_time)
-date_time.replace(tzinfo=zone)
-time_local = date_time.astimezone(zone)
+date_time = zone.localize(date_time)
+st.write(date_time)
+#time_local = date_time.astimezone(zone)
 #st.write(f"Local time: {time_local.strftime('%H:%M')}")
-t = ts.from_datetime(time_local)
+t = ts.from_datetime(date_time)
 
 
 # 180 = South, 0 = North
