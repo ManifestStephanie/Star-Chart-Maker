@@ -23,8 +23,7 @@ import ecliptic
 # Enter location
 loc_text = st.text_input('Address', value="Space Needle", placeholder="345 Blueberry Ln Lexington KY")
 
-@st.cache_data
-
+#@st.cache_data
 def get_location(loc_text=loc_text):
     geolocator = Nominatim(user_agent="Star_Chart_Generator")
     nom_location = geolocator.geocode(loc_text)
@@ -33,13 +32,13 @@ def get_location(loc_text=loc_text):
     location = wgs84.latlon(lat, long)
 
     # Calculate the correct time zone
-    obj = TimezoneFinder()
-    zone_name = obj.timezone_at(lat=lat, lng=long)
+    obj_tz = TimezoneFinder()
+    zone_name = obj_tz.timezone_at(lat=lat, lng=long)
     zone = timezone(zone_name)
     # st.write(f"zone: {zone}")
-    return zone, location, long, lat
+    return zone, zone_name, location, long, lat
 
-zone, location, long, lat = get_location()
+zone, zone_name, location, long, lat = get_location()
 st.write(f"Chart Long, Lat: {long}, {lat}")
 
 # OpenStreetMaps requisite attribution

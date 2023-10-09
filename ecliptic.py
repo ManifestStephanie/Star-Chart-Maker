@@ -1,6 +1,6 @@
 """ecliptic.py
 This module calculates the path of the ecliptic for plotting"""
-
+import streamlit
 #from datetime import datetime
 from skyfield.api import Star, load, wgs84, Angle
 from skyfield.data import hipparcos, stellarium
@@ -12,6 +12,7 @@ import numpy as np
 # We will just pick an arbitrary year, since accuracy isn't paramount
 # and its essentially the same from year to year
 
+#@streamlit.cache_data
 def make_ecliptic_path(year=2010):
 #year = 2010
     t_sun = ts.utc(year, 1, range(365))
