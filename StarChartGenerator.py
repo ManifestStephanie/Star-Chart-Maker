@@ -1,35 +1,27 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
 # Allsky chart code based on https://github.com/skyfielders/python-skyfield/discussions/636
 
-
-# In[2]:
-
-import streamlit as st
-from matplotlib.backends.backend_agg import RendererAgg
+import math
+import re
+from datetime import datetime, time
 
 import numpy as np
-import math
-from matplotlib import pyplot as plt
-from matplotlib.collections import LineCollection
-from skyfield.api import Star, load, wgs84, N, S, W, E, Angle
-from skyfield.constants import GM_SUN_Pitjeva_2005_km3_s2 as GM_SUN
-from skyfield.data import hipparcos, mpc, stellarium
-from skyfield.projections import build_stereographic_projection
-from datetime import datetime, time
-from datetime import timezone as tzone
-from pytz import timezone
-import re
+import streamlit as st
 from geopy.geocoders import Nominatim
+from matplotlib import pyplot as plt
+from matplotlib.backends.backend_agg import RendererAgg
+from matplotlib.collections import LineCollection
+from pytz import timezone
+from skyfield.api import Star, load, wgs84, Angle
+from skyfield.data import hipparcos, stellarium
+from skyfield.projections import build_stereographic_projection
 from timezonefinder import TimezoneFinder
+import ecliptic
 
-# In[3]:
 # Enter location
-loc_text = st.text_input('Address', value="345 Blueberry Ln Lexington", placeholder="345 Blueberry Ln Lexington KY")
+loc_text = st.text_input('Address', value="Space Needle", placeholder="345 Blueberry Ln Lexington KY")
 st.write("Powered by [OpenStreetMap](http://www.openstreetmap.org/copyright)")
 #seattle = wgs84.latlon(47.61352679507131, -122.30535433025425, elevation_m=100)
 geolocator = Nominatim(user_agent="Star_Chart_Generator")
@@ -47,6 +39,7 @@ zone = timezone(zone_name)
 
 # Load timescale
 ts = load.timescale()
+ecliptic.ts = ts
 
 # Enter date and time
 date = st.date_input('Date')
@@ -66,28 +59,19 @@ degrees = 0.0
 zenith = location.at(t).from_altaz(alt_degrees=90, az_degrees=degrees) 
 
 
-# In[81]:
-
-
 eph = load('de421.bsp')
 earth = eph['earth']
 
 eph_obj = ('sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter barycenter', 'saturn barycenter',
            'uranus barycenter', 'neptune barycenter')
+ecliptic.eph_sun = eph['sun']
 radius_km = (695700, 1737.4, 2437.7, 6051.8, 3389.5, 69911, 58232, 25362, 24622)
 radius_km_dict = dict(zip(eph_obj, radius_km))
-
-
-# In[82]:
 
 
 # The Hipparcos mission provides our star catalog.
 with load.open(hipparcos.URL) as f:
     stars = hipparcos.load_dataframe(f)
-
-
-# In[83]:
-
 
 # The constellation outlines come from Stellarium. We make a list
 # of the stars at which each edge starts, and the star at which each edge
@@ -101,11 +85,9 @@ edges_star1 = [star1 for star1, star2 in edges]
 edges_star2 = [star2 for star1, star2 in edges]
 
 
-# In[84]:
-
-
 # Center the chart on the zenith
 projection = build_stereographic_projection(zenith)
+ecliptic.projection = projection
 field_of_view_degrees = 180.0
 
 # Allow user to select limiting magnitude
@@ -113,12 +95,10 @@ limiting_magnitude = st.slider(label="Limiting Magnitude of Stars", min_value=1.
 #limiting_magnitude = 6.0
 
 
-# In[86]:
-
-
 # Now that we have constructed our projection, compute the x and y
 # coordinates that each star and the jupiter will have on the plot
 loc = earth + location
+ecliptic.loc = loc
 
 star_positions = earth.at(t).observe(Star.from_dataframe(stars))
 #star_alt = star_positions.apparent().altaz()[0].degrees
@@ -140,9 +120,6 @@ for obj in eph_obj:
     apparent_diam_arcsec[obj] = Angle(radians=np.arcsin(radius_km_dict[obj] / dist_km[obj]) * 2.0).arcseconds()
 
 
-# In[87]:
-
-
 # Create a True/False mask marking the stars bright enough to be
 # included in our plot. And go ahead and compute how large their
 # markers will be on the plot
@@ -152,9 +129,6 @@ magnitude = stars['magnitude'][bright_stars]
 marker_size = (0.5 + limiting_magnitude - magnitude) ** 2.0
 
 
-# In[88]:
-
-
 # The constellation lines will each begin at the x, y of one star and end
 # at the x, y of another. We have to "rollaxis" the resulting coordinate
 # array into the shape that matplotlib expects.
@@ -162,9 +136,6 @@ marker_size = (0.5 + limiting_magnitude - magnitude) ** 2.0
 xy1 = stars[['x', 'y']].loc[edges_star1].values
 xy2 = stars[['x', 'y']].loc[edges_star2].values
 lines_xy = np.rollaxis(np.array([xy1, xy2]), 1)
-
-
-# In[89]:
 
 
 # Time to build the figure!
@@ -204,7 +175,11 @@ with _lock:
     ax.scatter(stars['x'][bright_stars], stars['y'][bright_stars],
                s=marker_size, color='k', zorder=0)
 
-    # Draw the jupiter positions
+    # Draw ecliptic
+    x_ecliptic, y_ecliptic = ecliptic.make_ecliptic_path()
+    ax.plot(x_ecliptic, y_ecliptic, linestyle='--')
+
+    # Draw the solar system positions
 
     color = {'sun': 'yellow',
              'moon': 'gray',
