@@ -22,20 +22,31 @@ import ecliptic
 
 # Enter location
 loc_text = st.text_input('Address', value="Space Needle", placeholder="345 Blueberry Ln Lexington KY")
+
+@st.cache_data
+
+def get_location(loc_text=loc_text):
+    geolocator = Nominatim(user_agent="Star_Chart_Generator")
+    nom_location = geolocator.geocode(loc_text)
+    long = nom_location.longitude
+    lat = nom_location.latitude
+    location = wgs84.latlon(lat, long)
+
+    # Calculate the correct time zone
+    obj = TimezoneFinder()
+    zone_name = obj.timezone_at(lat=lat, lng=long)
+    zone = timezone(zone_name)
+    # st.write(f"zone: {zone}")
+    return zone, location, long, lat
+
+zone, location, long, lat = get_location()
+st.write(f"Chart Long, Lat: {long}, {lat}")
+
+# OpenStreetMaps requisite attribution
 st.write("Powered by [OpenStreetMap](http://www.openstreetmap.org/copyright)")
 #seattle = wgs84.latlon(47.61352679507131, -122.30535433025425, elevation_m=100)
-geolocator = Nominatim(user_agent="Star_Chart_Generator")
-nom_location = geolocator.geocode(loc_text)
-long = nom_location.longitude
-lat = nom_location.latitude
-st.write(f"Chart Long, Lat: {long}, {lat}")
-location = wgs84.latlon(lat, long)
+#geolocator = Nominatim(user_agent="Star_Chart_Generator")
 
-# Calculate the correct time zone
-obj = TimezoneFinder()
-zone_name = obj.timezone_at(lat=lat, lng=long)
-zone = timezone(zone_name)
-#st.write(f"zone: {zone}")
 
 # Load timescale
 ts = load.timescale()
@@ -58,8 +69,11 @@ degrees = 0.0
 # Set zenith
 zenith = location.at(t).from_altaz(alt_degrees=90, az_degrees=degrees) 
 
+@st.cache_resource
+def load_eph():
+    return load('de421.bsp')
+eph = load_eph()
 
-eph = load('de421.bsp')
 earth = eph['earth']
 
 eph_obj = ('sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter barycenter', 'saturn barycenter',
@@ -70,8 +84,11 @@ radius_km_dict = dict(zip(eph_obj, radius_km))
 
 
 # The Hipparcos mission provides our star catalog.
-with load.open(hipparcos.URL) as f:
-    stars = hipparcos.load_dataframe(f)
+@st.cache_data
+def load_stars():
+    with load.open(hipparcos.URL) as f:
+        return hipparcos.load_dataframe(f)
+stars = load_stars()
 
 # The constellation outlines come from Stellarium. We make a list
 # of the stars at which each edge starts, and the star at which each edge
@@ -79,7 +96,7 @@ with load.open(hipparcos.URL) as f:
 
 with load.open('constellationship.fab') as f:
     constellations = stellarium.parse_constellations(f)
-    
+
 edges = [edge for name, edges in constellations for edge in edges]
 edges_star1 = [star1 for star1, star2 in edges]
 edges_star2 = [star2 for star1, star2 in edges]
